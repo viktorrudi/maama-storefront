@@ -16,7 +16,6 @@ import {
 
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;
-  footer: Promise<FooterQuery | null>;
   header: HeaderQuery;
   isLoggedIn: Promise<boolean>;
   publicStoreDomain: string;
@@ -26,7 +25,6 @@ interface PageLayoutProps {
 export function PageLayout({
   cart,
   children = null,
-  footer,
   header,
   isLoggedIn,
   publicStoreDomain,
@@ -45,11 +43,7 @@ export function PageLayout({
         />
       )}
       <main>{children}</main>
-      <Footer
-        footer={footer}
-        header={header}
-        publicStoreDomain={publicStoreDomain}
-      />
+      <Footer header={header} publicStoreDomain={publicStoreDomain} />
     </Aside.Provider>
   );
 }

@@ -1,49 +1,34 @@
-import { Suspense } from "react";
-import { Await, NavLink } from "@remix-run/react";
-import type { FooterQuery, HeaderQuery } from "storefrontapi.generated";
+import { NavLink } from "@remix-run/react";
+import type { HeaderQuery } from "storefrontapi.generated";
 
 interface FooterProps {
-  footer: Promise<FooterQuery | null>;
   header: HeaderQuery;
   publicStoreDomain: string;
 }
 
-export function Footer({
-  footer: footerPromise,
-  header,
-  publicStoreDomain,
-}: FooterProps) {
+export function Footer({ header, publicStoreDomain }: FooterProps) {
   return (
-    <Suspense>
-      <Await resolve={footerPromise}>
-        {(footer) => (
-          <footer className="footer">
-            {footer?.menu && header.shop.primaryDomain?.url && (
-              <FooterMenu
-                menu={footer.menu}
-                primaryDomainUrl={header.shop.primaryDomain.url}
-                publicStoreDomain={publicStoreDomain}
-              />
-            )}
-          </footer>
-        )}
-      </Await>
-    </Suspense>
+    <footer className="footer">
+      {header.shop.primaryDomain?.url && (
+        <FooterMenu
+          primaryDomainUrl={header.shop.primaryDomain.url}
+          publicStoreDomain={publicStoreDomain}
+        />
+      )}
+    </footer>
   );
 }
 
 function FooterMenu({
-  menu,
   primaryDomainUrl,
   publicStoreDomain,
 }: {
-  menu: FooterQuery["menu"];
   primaryDomainUrl: FooterProps["header"]["shop"]["primaryDomain"]["url"];
   publicStoreDomain: string;
 }) {
   return (
     <nav className="footer-menu" role="navigation">
-      {(menu || FALLBACK_FOOTER_MENU).items.map((item) => {
+      {FALLBACK_FOOTER_MENU.items.map((item) => {
         if (!item.url) return null;
         // if the url is internal, we strip the domain
         const url =

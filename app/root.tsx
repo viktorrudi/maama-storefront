@@ -15,7 +15,7 @@ import favicon from "~/assets/favicon.svg";
 import resetStyles from "~/styles/reset.css?url";
 import appStyles from "~/styles/app.css?url";
 import { PageLayout } from "~/components/PageLayout";
-import { FOOTER_QUERY, HEADER_QUERY } from "~/lib/fragments";
+import { HEADER_QUERY } from "~/lib/fragments";
 
 export type RootLoader = typeof loader;
 
@@ -91,7 +91,9 @@ async function loadCriticalData({ context }: LoaderFunctionArgs) {
     storefront.query(HEADER_QUERY, {
       cache: storefront.CacheLong(),
       variables: {
-        headerMenuHandle: "main-menu", // Adjust to your header menu handle
+        // TODO: Consider these for language setting
+        // country: "NO", // Adjust to your header menu handle
+        // language: "NO-NB", // Adjust to your header menu handle
       },
     }),
     // Add other queries here, so that they are loaded in parallel
@@ -108,25 +110,11 @@ async function loadCriticalData({ context }: LoaderFunctionArgs) {
  * Make sure to not throw any errors here, as it will cause the page to 500.
  */
 function loadDeferredData({ context }: LoaderFunctionArgs) {
-  const { storefront, customerAccount, cart } = context;
+  const { customerAccount, cart } = context;
 
-  // defer the footer query (below the fold)
-  const footer = storefront
-    .query(FOOTER_QUERY, {
-      cache: storefront.CacheLong(),
-      variables: {
-        footerMenuHandle: "footer", // Adjust to your footer menu handle
-      },
-    })
-    .catch((error) => {
-      // Log query errors, but don't throw them so the page can still render
-      console.error(error);
-      return null;
-    });
   return {
     cart: cart.get(),
     isLoggedIn: customerAccount.isLoggedIn(),
-    footer,
   };
 }
 
