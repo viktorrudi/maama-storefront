@@ -1,8 +1,11 @@
-import {Suspense} from 'react';
-import {Await, NavLink} from '@remix-run/react';
-import {type CartViewPayload, useAnalytics} from '@shopify/hydrogen';
-import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
-import {useAside} from '~/components/Aside';
+import { Suspense } from "react";
+import { Await, NavLink } from "@remix-run/react";
+import { type CartViewPayload, useAnalytics } from "@shopify/hydrogen";
+import type {
+  HeaderQuery,
+  CartApiQueryFragment,
+} from "storefrontapi.generated";
+import { useAside } from "~/components/Aside";
 
 interface HeaderProps {
   header: HeaderQuery;
@@ -11,7 +14,7 @@ interface HeaderProps {
   publicStoreDomain: string;
 }
 
-type Viewport = 'desktop' | 'mobile';
+type Viewport = "desktop" | "mobile";
 
 export function Header({
   header,
@@ -19,7 +22,7 @@ export function Header({
   cart,
   publicStoreDomain,
 }: HeaderProps) {
-  const {shop, menu} = header;
+  const { shop, menu } = header;
   return (
     <header className="header">
       <NavLink prefetch="intent" to="/" style={activeLinkStyle} end>
@@ -42,15 +45,15 @@ export function HeaderMenu({
   viewport,
   publicStoreDomain,
 }: {
-  menu: HeaderProps['header']['menu'];
-  primaryDomainUrl: HeaderProps['header']['shop']['primaryDomain']['url'];
+  menu: HeaderProps["header"]["menu"];
+  primaryDomainUrl: HeaderProps["header"]["shop"]["primaryDomain"]["url"];
   viewport: Viewport;
-  publicStoreDomain: HeaderProps['publicStoreDomain'];
+  publicStoreDomain: HeaderProps["publicStoreDomain"];
 }) {
   const className = `header-menu-${viewport}`;
 
   function closeAside(event: React.MouseEvent<HTMLAnchorElement>) {
-    if (viewport === 'mobile') {
+    if (viewport === "mobile") {
       event.preventDefault();
       window.location.href = event.currentTarget.href;
     }
@@ -58,7 +61,7 @@ export function HeaderMenu({
 
   return (
     <nav className={className} role="navigation">
-      {viewport === 'mobile' && (
+      {viewport === "mobile" && (
         <NavLink
           end
           onClick={closeAside}
@@ -74,11 +77,12 @@ export function HeaderMenu({
 
         // if the url is internal, we strip the domain
         const url =
-          item.url.includes('myshopify.com') ||
+          item.url.includes("myshopify.com") ||
           item.url.includes(publicStoreDomain) ||
           item.url.includes(primaryDomainUrl)
             ? new URL(item.url).pathname
             : item.url;
+        console.log({ menu });
         return (
           <NavLink
             className="header-menu-item"
@@ -100,14 +104,14 @@ export function HeaderMenu({
 function HeaderCtas({
   isLoggedIn,
   cart,
-}: Pick<HeaderProps, 'isLoggedIn' | 'cart'>) {
+}: Pick<HeaderProps, "isLoggedIn" | "cart">) {
   return (
     <nav className="header-ctas" role="navigation">
       <HeaderMenuMobileToggle />
       <NavLink prefetch="intent" to="/account" style={activeLinkStyle}>
         <Suspense fallback="Sign in">
           <Await resolve={isLoggedIn} errorElement="Sign in">
-            {(isLoggedIn) => (isLoggedIn ? 'Account' : 'Sign in')}
+            {(isLoggedIn) => (isLoggedIn ? "Account" : "Sign in")}
           </Await>
         </Suspense>
       </NavLink>
@@ -118,11 +122,11 @@ function HeaderCtas({
 }
 
 function HeaderMenuMobileToggle() {
-  const {open} = useAside();
+  const { open } = useAside();
   return (
     <button
       className="header-menu-mobile-toggle reset"
-      onClick={() => open('mobile')}
+      onClick={() => open("mobile")}
     >
       <h3>☰</h3>
     </button>
@@ -130,29 +134,29 @@ function HeaderMenuMobileToggle() {
 }
 
 function SearchToggle() {
-  const {open} = useAside();
+  const { open } = useAside();
   return (
-    <button className="reset" onClick={() => open('search')}>
+    <button className="reset" onClick={() => open("search")}>
       Search
     </button>
   );
 }
 
-function CartBadge({count}: {count: number | null}) {
-  const {open} = useAside();
-  const {publish, shop, cart, prevCart} = useAnalytics();
+function CartBadge({ count }: { count: number | null }) {
+  const { open } = useAside();
+  const { publish, shop, cart, prevCart } = useAnalytics();
 
   return (
     <a
       href="/cart"
       onClick={(e) => {
         e.preventDefault();
-        open('cart');
-        publish('cart_viewed', {
+        open("cart");
+        publish("cart_viewed", {
           cart,
           prevCart,
           shop,
-          url: window.location.href || '',
+          url: window.location.href || "",
         } as CartViewPayload);
       }}
     >
@@ -161,7 +165,7 @@ function CartBadge({count}: {count: number | null}) {
   );
 }
 
-function CartToggle({cart}: Pick<HeaderProps, 'cart'>) {
+function CartToggle({ cart }: Pick<HeaderProps, "cart">) {
   return (
     <Suspense fallback={<CartBadge count={null} />}>
       <Await resolve={cart}>
@@ -175,42 +179,42 @@ function CartToggle({cart}: Pick<HeaderProps, 'cart'>) {
 }
 
 const FALLBACK_HEADER_MENU = {
-  id: 'gid://shopify/Menu/199655587896',
+  id: "gid://shopify/Menu/199655587896",
   items: [
     {
-      id: 'gid://shopify/MenuItem/461609500728',
+      id: "gid://shopify/MenuItem/461609500728",
       resourceId: null,
       tags: [],
-      title: 'Collections',
-      type: 'HTTP',
-      url: '/collections',
+      title: "Collections",
+      type: "HTTP",
+      url: "/collections",
       items: [],
     },
     {
-      id: 'gid://shopify/MenuItem/461609533496',
+      id: "gid://shopify/MenuItem/461609533496",
       resourceId: null,
       tags: [],
-      title: 'Blog',
-      type: 'HTTP',
-      url: '/blogs/journal',
+      title: "Blog",
+      type: "HTTP",
+      url: "/blogs/journal",
       items: [],
     },
     {
-      id: 'gid://shopify/MenuItem/461609566264',
+      id: "gid://shopify/MenuItem/461609566264",
       resourceId: null,
       tags: [],
-      title: 'Policies',
-      type: 'HTTP',
-      url: '/policies',
+      title: "Policies",
+      type: "HTTP",
+      url: "/policies",
       items: [],
     },
     {
-      id: 'gid://shopify/MenuItem/461609599032',
-      resourceId: 'gid://shopify/Page/92591030328',
+      id: "gid://shopify/MenuItem/461609599032",
+      resourceId: "gid://shopify/Page/92591030328",
       tags: [],
-      title: 'About',
-      type: 'PAGE',
-      url: '/pages/about',
+      title: "About",
+      type: "PAGE",
+      url: "/pages/about",
       items: [],
     },
   ],
@@ -224,7 +228,7 @@ function activeLinkStyle({
   isPending: boolean;
 }) {
   return {
-    fontWeight: isActive ? 'bold' : undefined,
-    color: isPending ? 'grey' : 'black',
+    fontWeight: isActive ? "bold" : undefined,
+    color: isPending ? "grey" : "black",
   };
 }

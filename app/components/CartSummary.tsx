@@ -1,15 +1,15 @@
-import type {CartApiQueryFragment} from 'storefrontapi.generated';
-import type {CartLayout} from '~/components/CartMain';
-import {CartForm, Money, type OptimisticCart} from '@shopify/hydrogen';
+import type { CartApiQueryFragment } from "storefrontapi.generated";
+import type { CartLayout } from "~/components/CartMain";
+import { CartForm, Money, type OptimisticCart } from "@shopify/hydrogen";
 
 type CartSummaryProps = {
   cart: OptimisticCart<CartApiQueryFragment | null>;
   layout: CartLayout;
 };
 
-export function CartSummary({cart, layout}: CartSummaryProps) {
+export function CartSummary({ cart, layout }: CartSummaryProps) {
   const className =
-    layout === 'page' ? 'cart-summary-page' : 'cart-summary-aside';
+    layout === "page" ? "cart-summary-page" : "cart-summary-aside";
 
   return (
     <div aria-labelledby="cart-summary" className={className}>
@@ -20,7 +20,7 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
           {cart.cost?.subtotalAmount?.amount ? (
             <Money data={cart.cost?.subtotalAmount} />
           ) : (
-            '-'
+            "-"
           )}
         </dd>
       </dl>
@@ -29,7 +29,7 @@ export function CartSummary({cart, layout}: CartSummaryProps) {
     </div>
   );
 }
-function CartCheckoutActions({checkoutUrl}: {checkoutUrl?: string}) {
+function CartCheckoutActions({ checkoutUrl }: { checkoutUrl?: string }) {
   if (!checkoutUrl) return null;
 
   return (
@@ -45,12 +45,12 @@ function CartCheckoutActions({checkoutUrl}: {checkoutUrl?: string}) {
 function CartDiscounts({
   discountCodes,
 }: {
-  discountCodes?: CartApiQueryFragment['discountCodes'];
+  discountCodes?: CartApiQueryFragment["discountCodes"];
 }) {
   const codes: string[] =
     discountCodes
       ?.filter((discount) => discount.applicable)
-      ?.map(({code}) => code) || [];
+      ?.map(({ code }) => code) || [];
 
   return (
     <div>
@@ -60,7 +60,7 @@ function CartDiscounts({
           <dt>Discount(s)</dt>
           <UpdateDiscountForm>
             <div className="cart-discount">
-              <code>{codes?.join(', ')}</code>
+              <code>{codes?.join(", ")}</code>
               &nbsp;
               <button>Remove</button>
             </div>

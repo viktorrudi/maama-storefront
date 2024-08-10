@@ -1,16 +1,21 @@
-import {defer, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import {useLoaderData, Link, type MetaFunction} from '@remix-run/react';
+import {
+  defer,
+  redirect,
+  type LoaderFunctionArgs,
+} from "@shopify/remix-oxygen";
+import { useLoaderData, Link, type MetaFunction } from "@remix-run/react";
 import {
   Pagination,
   getPaginationVariables,
   Image,
   Money,
-} from '@shopify/hydrogen';
-import type {ProductItemFragment} from 'storefrontapi.generated';
-import {useVariantUrl} from '~/lib/variants';
+  Analytics,
+} from "@shopify/hydrogen";
+import type { ProductItemFragment } from "storefrontapi.generated";
+import { useVariantUrl } from "~/lib/variants";
 
-export const meta: MetaFunction<typeof loader> = () => {
-  return [{title: `Hydrogen | Products`}];
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  return [{ title: `Hydrogen | ${data?.collection.title ?? ""} Collection` }];
 };
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -20,26 +25,44 @@ export async function loader(args: LoaderFunctionArgs) {
   // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
 
-  return defer({...deferredData, ...criticalData});
+  return defer({ ...deferredData, ...criticalData });
 }
 
 /**
  * Load data necessary for rendering content above the fold. This is the critical data
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  */
-async function loadCriticalData({context, request}: LoaderFunctionArgs) {
-  const {storefront} = context;
+async function loadCriticalData({
+  context,
+  params,
+  request,
+}: LoaderFunctionArgs) {
+  const { handle } = params;
+  const { storefront } = context;
   const paginationVariables = getPaginationVariables(request, {
     pageBy: 8,
   });
 
-  const [{products}] = await Promise.all([
-    storefront.query(CATALOG_QUERY, {
-      variables: {...paginationVariables},
+  if (!handle) {
+    throw redirect("/collections");
+  }
+
+  const [{ collection }] = await Promise.all([
+    storefront.query(COLLECTION_QUERY, {
+      variables: { handle, ...paginationVariables },
+      // Add other queries here, so that they are loaded in parallel
     }),
-    // Add other queries here, so that they are loaded in parallel
   ]);
-  return {products};
+
+  if (!collection) {
+    throw new Response(`Collection ${handle} not found`, {
+      status: 404,
+    });
+  }
+
+  return {
+    collection,
+  };
 }
 
 /**
@@ -47,35 +70,44 @@ async function loadCriticalData({context, request}: LoaderFunctionArgs) {
  * fetched after the initial page load. If it's unavailable, the page should still 200.
  * Make sure to not throw any errors here, as it will cause the page to 500.
  */
-function loadDeferredData({context}: LoaderFunctionArgs) {
+function loadDeferredData({ context }: LoaderFunctionArgs) {
   return {};
 }
 
 export default function Collection() {
-  const {products} = useLoaderData<typeof loader>();
+  const { collection } = useLoaderData<typeof loader>();
 
   return (
     <div className="collection">
-      <h1>Products</h1>
-      <Pagination connection={products}>
-        {({nodes, isLoading, PreviousLink, NextLink}) => (
+      <h1>{collection.title}</h1>
+      <p className="collection-description">{collection.description}</p>
+      <Pagination connection={collection.products}>
+        {({ nodes, isLoading, PreviousLink, NextLink }) => (
           <>
             <PreviousLink>
-              {isLoading ? 'Loading...' : <span>↑ Load previous</span>}
+              {isLoading ? "Loading..." : <span>↑ Load previous</span>}
             </PreviousLink>
             <ProductsGrid products={nodes} />
             <br />
             <NextLink>
-              {isLoading ? 'Loading...' : <span>Load more ↓</span>}
+              {isLoading ? "Loading..." : <span>Load more ↓</span>}
             </NextLink>
           </>
         )}
       </Pagination>
+      <Analytics.CollectionView
+        data={{
+          collection: {
+            id: collection.id,
+            handle: collection.handle,
+          },
+        }}
+      />
     </div>
   );
 }
 
-function ProductsGrid({products}: {products: ProductItemFragment[]}) {
+function ProductsGrid({ products }: { products: ProductItemFragment[] }) {
   return (
     <div className="products-grid">
       {products.map((product, index) => {
@@ -83,7 +115,7 @@ function ProductsGrid({products}: {products: ProductItemFragment[]}) {
           <ProductItem
             key={product.id}
             product={product}
-            loading={index < 8 ? 'eager' : undefined}
+            loading={index < 8 ? "eager" : undefined}
           />
         );
       })}
@@ -96,7 +128,7 @@ function ProductItem({
   loading,
 }: {
   product: ProductItemFragment;
-  loading?: 'eager' | 'lazy';
+  loading?: "eager" | "lazy";
 }) {
   const variant = product.variants.nodes[0];
   const variantUrl = useVariantUrl(product.handle, variant.selectedOptions);
@@ -159,9 +191,11 @@ const PRODUCT_ITEM_FRAGMENT = `#graphql
   }
 ` as const;
 
-// NOTE: https://shopify.dev/docs/api/storefront/2024-01/objects/product
-const CATALOG_QUERY = `#graphql
-  query Catalog(
+// NOTE: https://shopify.dev/docs/api/storefront/2022-04/objects/collection
+const COLLECTION_QUERY = `#graphql
+  ${PRODUCT_ITEM_FRAGMENT}
+  query Collection(
+    $handle: String!
     $country: CountryCode
     $language: LanguageCode
     $first: Int
@@ -169,17 +203,27 @@ const CATALOG_QUERY = `#graphql
     $startCursor: String
     $endCursor: String
   ) @inContext(country: $country, language: $language) {
-    products(first: $first, last: $last, before: $startCursor, after: $endCursor) {
-      nodes {
-        ...ProductItem
-      }
-      pageInfo {
-        hasPreviousPage
-        hasNextPage
-        startCursor
-        endCursor
+    collection(handle: $handle) {
+      id
+      handle
+      title
+      description
+      products(
+        first: $first,
+        last: $last,
+        before: $startCursor,
+        after: $endCursor
+      ) {
+        nodes {
+          ...ProductItem
+        }
+        pageInfo {
+          hasPreviousPage
+          hasNextPage
+          endCursor
+          startCursor
+        }
       }
     }
   }
-  ${PRODUCT_ITEM_FRAGMENT}
 ` as const;

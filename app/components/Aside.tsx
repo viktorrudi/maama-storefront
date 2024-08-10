@@ -1,6 +1,6 @@
-import {createContext, type ReactNode, useContext, useState} from 'react';
+import { createContext, type ReactNode, useContext, useState } from "react";
 
-type AsideType = 'search' | 'cart' | 'mobile' | 'closed';
+type AsideType = "search" | "cart" | "mobile" | "closed";
 type AsideContextValue = {
   type: AsideType;
   open: (mode: AsideType) => void;
@@ -26,13 +26,13 @@ export function Aside({
   type: AsideType;
   heading: React.ReactNode;
 }) {
-  const {type: activeType, close} = useAside();
+  const { type: activeType, close } = useAside();
   const expanded = type === activeType;
 
   return (
     <div
       aria-modal
-      className={`overlay ${expanded ? 'expanded' : ''}`}
+      className={`overlay ${expanded ? "expanded" : ""}`}
       role="dialog"
     >
       <button className="close-outside" onClick={close} />
@@ -51,15 +51,15 @@ export function Aside({
 
 const AsideContext = createContext<AsideContextValue | null>(null);
 
-Aside.Provider = function AsideProvider({children}: {children: ReactNode}) {
-  const [type, setType] = useState<AsideType>('closed');
+Aside.Provider = function AsideProvider({ children }: { children: ReactNode }) {
+  const [type, setType] = useState<AsideType>("closed");
 
   return (
     <AsideContext.Provider
       value={{
         type,
         open: setType,
-        close: () => setType('closed'),
+        close: () => setType("closed"),
       }}
     >
       {children}
@@ -70,7 +70,7 @@ Aside.Provider = function AsideProvider({children}: {children: ReactNode}) {
 export function useAside() {
   const aside = useContext(AsideContext);
   if (!aside) {
-    throw new Error('useAside must be used within an AsideProvider');
+    throw new Error("useAside must be used within an AsideProvider");
   }
   return aside;
 }

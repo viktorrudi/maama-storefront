@@ -3,21 +3,21 @@
 /// <reference types="@shopify/oxygen-workers-types" />
 
 // Enhance TypeScript's built-in typings.
-import '@total-typescript/ts-reset';
+import "@total-typescript/ts-reset";
 
 import type {
   Storefront,
   CustomerAccount,
   HydrogenCart,
   HydrogenSessionData,
-} from '@shopify/hydrogen';
-import type {AppSession} from '~/lib/session';
+} from "@shopify/hydrogen";
+import type { AppSession } from "~/lib/session";
 
 declare global {
   /**
    * A global `process` object is only available during build to access NODE_ENV.
    */
-  const process: {env: {NODE_ENV: 'production' | 'development'}};
+  const process: { env: { NODE_ENV: "production" | "development" } };
 
   /**
    * Declare expected Env parameter in fetch handler.
@@ -34,7 +34,7 @@ declare global {
   }
 }
 
-declare module '@shopify/remix-oxygen' {
+declare module "@shopify/remix-oxygen" {
   /**
    * Declare local additions to the Remix loader context.
    */
@@ -44,7 +44,7 @@ declare module '@shopify/remix-oxygen' {
     storefront: Storefront;
     customerAccount: CustomerAccount;
     session: AppSession;
-    waitUntil: ExecutionContext['waitUntil'];
+    waitUntil: ExecutionContext["waitUntil"];
   }
 
   /**
